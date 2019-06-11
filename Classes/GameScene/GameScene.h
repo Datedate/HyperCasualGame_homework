@@ -3,18 +3,32 @@
 
 #include "cocos2d.h"
 
-class GameScene : public cocos2d::Layer
+USING_NS_CC;
+
+class GameLayer;
+class TouchLayer;
+class TitleLayer;
+class ResultLayer;
+class DebugLayer;
+class UILayer;
+class HoldLayer;
+class BackGroundLayer;
+class EffectLayer;
+
+
+class GameScene : public cocos2d::Scene
 {
 public:
-	static cocos2d::Scene* createScene();
 
 	virtual bool init();
 
-	// a selector callback
-	void menuCloseCallback(cocos2d::Ref* pSender);
 
 	// implement the "static create()" method manually
 	CREATE_FUNC(GameScene);
+
+private:
+	Scene*     m_physicsScene;
+	GameLayer* m_gamelayer;
 };
 
 #endif

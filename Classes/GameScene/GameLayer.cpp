@@ -1,6 +1,7 @@
 #include "GameLayer.h"
 #include "Player.h"
 #include "Wall.h"
+#include "VerticalScroll.h"
 
 bool GameLayer::init() {
 	if (!Layer::init()) {
@@ -18,6 +19,9 @@ bool GameLayer::init() {
 	// •Ç¶¬
 	m_wall = Wall::create();
 	this->addChild(m_wall);
+
+	// ‰æ–ÊƒXƒNƒ[ƒ‹‘ÎÛ‚ÌÝ’è
+	this->runAction(VerticalScroll::create(m_player));
 
 	this->scheduleUpdate();
 

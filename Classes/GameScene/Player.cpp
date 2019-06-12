@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "EventData.h"
+#include "VerticalScroll.h"
 
 Player::~Player() {
 	Director::getInstance()->getEventDispatcher()->removeCustomEventListeners("touchStart_player_event");
@@ -32,8 +33,12 @@ bool Player::init() {
 	// イベント受け取り処理登録
 	initEventReceive();
 
+	// 画面スクロール対象の設定
+	//this->runAction(VerticalScroll::create(this));
+
 	// スケジューラにUpdate回してもらう
 	this->scheduleUpdate();
+
 	return true;
 }
 
@@ -109,7 +114,6 @@ void Player::moveStart(EventCustom* _event) {
 	Point began = data->touchBegan;
 	Point ended = data->touchRealse;
 
-//	Vect force = Vect(ended.x - began.x, ended.y - began.y) * m_vecPower;
 	Vect force = Vect(began.x - ended.x, began.y - ended.y) * m_vecPower;
 	this->getPhysicsBody()->setDynamic(true);
 	this->getPhysicsBody()->applyImpulse(force);

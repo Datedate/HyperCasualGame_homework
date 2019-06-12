@@ -21,16 +21,15 @@ public:
 	void moveStop(EventCustom* _event);
 	void moveStart(EventCustom* _event);
 private:
-	void initEventDispatch();		// イベント発行準備
 	void initEventReceive();		// イベント受け取り準備
 	bool eventDisptcher(EEventDispatch _eEventType);	// イベント発行処理
 private:
 	float m_vecPower;				//	プレイヤー吹き飛ばしベクトルの強さ 
 // プレイヤー座標を渡すイベント
-	EventCustom m_debugEvent;
-	EventCustom m_holdEvent;
-	EventCustom m_uiEvent;
-	EventCustom m_backGroundEvent;
+	EventCustom m_debugEvent = EventCustom("player_debug_event");
+	EventCustom m_holdEvent = EventCustom("player_hold_event");
+	EventCustom m_uiEvent = EventCustom("player_ui_event");
+	EventCustom m_backGroundEvent = EventCustom("player_scroll_event");
 };
 
 #endif

@@ -5,18 +5,19 @@
 
 USING_NS_CC;
 
-const int EDGE_NUM = 2;
+class Player;
+class Wall;
 
 class GameLayer : public Layer {
 public:
 	virtual bool init();
-
+	void update(float _dt);
 	CREATE_FUNC(GameLayer);
 
 private:
 
-	Sprite* m_player;
-	Node* edges[EDGE_NUM];
+	Player* m_player;
+	Wall* m_wall;
 };
 
 #endif

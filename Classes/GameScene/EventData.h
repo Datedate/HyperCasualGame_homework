@@ -8,10 +8,11 @@ USING_NS_CC;
 // イベント通知種類
 enum EEventDispatch : long{
 	PLAYER_EVENT,
-	DEBUG_EVENT,
+	DEBUG_DISPLAY_EVENT,
 	HOLD_EVENT,
 	UI_EVENT,
-	BACKGROUND_EVENT
+	BACKGROUND_EVENT,
+	TITLE_EVENT
 };
 
 // タッチイベント種類

@@ -19,8 +19,8 @@ class EffectLayer;
 class GameScene : public cocos2d::Scene
 {
 public:
-
-	virtual bool init();
+static Scene* createScene();
+	bool init();
 
 
 	// implement the "static create()" method manually

@@ -12,22 +12,10 @@ bool TouchLayer::init() {
 	}
 
 
-	// イベント発行
-	initEventDispatch();
 	// イベント受け取り処理登録
 	initEventReceive();
 
 	return true;
-}
-
-void TouchLayer::initEventDispatch() {
-	// イベント発行準備
-	m_playerOnTriggerEvent = EventCustom("touchTrigger_player_event");
-	m_playerOnReleaseEvent = EventCustom("touchRelease_player_event");
-	m_titleOnTriggerEvent  = EventCustom("touchTrigger_title_event");
-	m_titleOnReleaseEvent  = EventCustom("touchRelease_title_event");
-	m_holdOnTriggerEvent   = EventCustom("touchTrigger_hold_event");
-	m_holdOnReleaseEvent   = EventCustom("touchRelease_hold_event");
 }
 
 void TouchLayer::initEventReceive() {
@@ -43,18 +31,65 @@ void TouchLayer::initEventReceive() {
 	dispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 }
 
-bool TouchLayer::eventDisptcher(ETouchEventDispatch _eTouchType, EEventDispatch _eEventType) {
+void TouchLayer::eventOnTriggerDispatch(EEventDispatch _eEventType, Touch* _touch) {
+	auto data = stEventSendTouchData();
+	data.touchBegan = _touch->getLocation();
+	data.touchRealse = m_endedPos;
+	switch (_eEventType)
+	{
+	case EEventDispatch::PLAYER_EVENT:
+		m_playerOnTriggerEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_playerOnTriggerEvent);
+		break;
+	case EEventDispatch::TITLE_EVENT:
+		m_titleOnTriggerEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_titleOnTriggerEvent);
+		break;
+	case EEventDispatch::HOLD_EVENT:
+		m_holdOnTriggerEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_holdOnTriggerEvent);
+		break;
+	default:
+		break;
+	}
+}
 
+void TouchLayer::eventOnReleaseDispatch(EEventDispatch _eEventType, Touch* _touch) {
+	auto data = stEventSendTouchData();
+	data.touchBegan = m_beganPos;
+	data.touchRealse = _touch->getLocation();
+	switch (_eEventType)
+	{
+	case EEventDispatch::PLAYER_EVENT:
+		m_playerOnReleaseEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_playerOnReleaseEvent);
+		break;
+	case EEventDispatch::TITLE_EVENT:
+		m_titleOnReleaseEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_titleOnReleaseEvent);
+		break;
+	case EEventDispatch::HOLD_EVENT:
+		m_holdOnReleaseEvent.setUserData(&data);
+		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_holdOnReleaseEvent);
+		break;
+	default:
+		break;
+	}
 }
 
 bool TouchLayer::onTouchBegan(Touch* _touch, Event* _event) {
+	eventOnTriggerDispatch(EEventDispatch::PLAYER_EVENT, _touch);
+	eventOnTriggerDispatch(EEventDispatch::TITLE_EVENT, _touch);
+	eventOnTriggerDispatch(EEventDispatch::HOLD_EVENT, _touch);
+
+	m_beganPos = _touch->getLocation();
 	return true;
 }
 
 void TouchLayer::onTouchEnded(Touch* _touch, Event* _event) {
+	eventOnReleaseDispatch(EEventDispatch::PLAYER_EVENT, _touch);
+	eventOnReleaseDispatch(EEventDispatch::TITLE_EVENT, _touch);
+	eventOnReleaseDispatch(EEventDispatch::HOLD_EVENT, _touch);
 
-}
-
-void TouchLayer::onTouchMoved(Touch* _touch, Event* _event) {
-	
+	m_endedPos = _touch->getLocation();
 }

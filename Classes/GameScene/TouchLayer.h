@@ -20,19 +20,21 @@ public:
 // Touchイベント
 	bool onTouchBegan(Touch* _touch, Event* _event);	// タッチした時呼ばれる関数
 	void onTouchEnded(Touch* _touch, Event* _event);	// タッチが離れた時呼ばれる関数
-	void onTouchMoved(Touch* _touch, Event* _event);	// タッチしながら移動中呼ばれる関数
 private:
-	void initEventDispatch();		// イベント発行準備
 	void initEventReceive();		// イベント受け取り準備
-	bool eventDisptcher(ETouchEventDispatch _eTouchType , EEventDispatch _eEventType);	// イベント発行処理
+	void eventOnTriggerDispatch(EEventDispatch _eEventType, Touch* _touch);
+	void eventOnReleaseDispatch(EEventDispatch _eEventType, Touch* _touch);
 private:
 // タッチ情報を渡すイベント
-	EventCustom m_playerOnTriggerEvent;
-	EventCustom m_playerOnReleaseEvent;
-	EventCustom m_titleOnTriggerEvent;
-	EventCustom m_titleOnReleaseEvent;
-	EventCustom m_holdOnTriggerEvent;
-	EventCustom m_holdOnReleaseEvent;
+	EventCustom m_playerOnTriggerEvent = EventCustom("touchTrigger_player_event");
+	EventCustom m_playerOnReleaseEvent = EventCustom("touchRelease_player_event");
+	EventCustom m_titleOnTriggerEvent = EventCustom("touchTrigger_title_event");
+	EventCustom m_titleOnReleaseEvent = EventCustom("touchRelease_title_event");
+	EventCustom m_holdOnTriggerEvent = EventCustom("touchTrigger_hold_event");
+	EventCustom m_holdOnReleaseEvent = EventCustom("touchRelease_hold_event");
+// 保存用タッチ座標
+	Vec2 m_beganPos;
+	Vec2 m_endedPos;
 };
 
 #endif

@@ -10,24 +10,31 @@ bool Player::init() {
 	if (!Sprite::init()) {
 		return false;
 	}
-	// プレイヤー初期化
+	// ビュー情報取得
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+	auto origin = Director::getInstance()->getVisibleOrigin();
 
-	// イベント発行
-	initEventDispatch();
+	// プレイヤー初期化
+	this->setPosition(origin.x + visibleSize.width / 2.0f, origin.y + visibleSize.height / 2.0f);
+	this->setColor(Color3B(255, 255, 255));
+	auto playerMat = PHYSICSBODY_MATERIAL_DEFAULT;
+	playerMat.restitution = 0.5f;
+	playerMat.friction = 0.4f;
+	auto phyPlayer = PhysicsBody::createCircle(10.0f, playerMat);
+	phyPlayer->setDynamic(true);
+	phyPlayer->setRotationEnable(false);
+	phyPlayer->setMass(1.0f);
+	phyPlayer->setMoment(1.0f);
+	this->setPhysicsBody(phyPlayer);
+
+	m_vecPower = 0.5f;
+
 	// イベント受け取り処理登録
 	initEventReceive();
 
 	// スケジューラにUpdate回してもらう
 	this->scheduleUpdate();
 	return true;
-}
-
-void Player::initEventDispatch() {
-	// イベント発行準備
-	m_debugEvent	  = EventCustom("player_debug_event");
-	m_holdEvent		  = EventCustom("player_hold_event");
-	m_uiEvent		  = EventCustom("player_ui_event");
-	m_backGroundEvent = EventCustom("player_scroll_event");
 }
 
 void Player::initEventReceive() {
@@ -41,7 +48,7 @@ void Player::update(float _dt) {
 
 
 	// それぞれのレイヤーにイベント発行
-	if (!eventDisptcher(EEventDispatch::DEBUG_EVENT)) {
+	if (!eventDisptcher(EEventDispatch::DEBUG_DISPLAY_EVENT)) {
 		// イベント種類を追加してください
 	}
 	if (!eventDisptcher(EEventDispatch::UI_EVENT)) {
@@ -55,27 +62,22 @@ void Player::update(float _dt) {
 bool Player::eventDisptcher(EEventDispatch _eEventType) {
 	// 送るデータ形式
 	auto data = stEventSendPlayerData();
-
+	data.pos = this->getPosition();
 	switch (_eEventType)
 	{
-		// TODO:setUserDataに座標だけ渡す
-	case DEBUG_EVENT:
-		data.pos = this->getPosition();
+	case EEventDispatch::DEBUG_DISPLAY_EVENT:
 		m_debugEvent.setUserData(&data);
 		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_debugEvent);
 		break;
-	case HOLD_EVENT:
-		data.pos = this->getPosition();
+	case EEventDispatch::HOLD_EVENT:
 		m_holdEvent.setUserData(&data);
 		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_holdEvent);
 		break;
-	case UI_EVENT:
-		data.pos = this->getPosition();
+	case EEventDispatch::UI_EVENT:
 		m_holdEvent.setUserData(&data);
 		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_holdEvent);
 		break;
-	case BACKGROUND_EVENT:
-		data.pos = this->getPosition();
+	case EEventDispatch::BACKGROUND_EVENT:
 		m_holdEvent.setUserData(&data);
 		Director::getInstance()->getEventDispatcher()->dispatchEvent(&m_holdEvent);
 		break;
@@ -96,10 +98,19 @@ void Player::moveStop(EventCustom* _event) {
 	}
 
 	// 重力軽減処理
+	this->getPhysicsBody()->setVelocity(Vec2(0, 0));
+	this->getPhysicsBody()->setDynamic(false);
+
 }
 
 void Player::moveStart(EventCustom* _event) {
 	// 吹っ飛ばす処理
-	// 
-	auto fastenVec = (stEventSendTouchData*)_event->getUserData();
+	auto data = (stEventSendTouchData*)_event->getUserData();
+	Point began = data->touchBegan;
+	Point ended = data->touchRealse;
+
+//	Vect force = Vect(ended.x - began.x, ended.y - began.y) * m_vecPower;
+	Vect force = Vect(began.x - ended.x, began.y - ended.y) * m_vecPower;
+	this->getPhysicsBody()->setDynamic(true);
+	this->getPhysicsBody()->applyImpulse(force);
 }

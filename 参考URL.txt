@@ -1,1 +1,3 @@
 http://surfrog.net/2016/06/27/cocos2dx-tutorial-mainpage/
+// physics 
+http://rinov.jp/cocos-doujo-dx/3-6.html

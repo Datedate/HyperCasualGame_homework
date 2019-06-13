@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "EventData.h"
 #include "VerticalScroll.h"
+#include "Collision.h"
 
 Player::~Player() {
 	Director::getInstance()->getEventDispatcher()->removeCustomEventListeners("touchStart_player_event");
@@ -26,15 +27,16 @@ bool Player::init() {
 	phyPlayer->setRotationEnable(false);
 	phyPlayer->setMass(1.0f);
 	phyPlayer->setMoment(1.0f);
+	// 衝突判定のマスク設定
+	phyPlayer->setCategoryBitmask(static_cast<int>(Collision::PLAYER));
+	//phyPlayer->setCollisionBitmask(static_cast<int>(Collision::Wall));
+	phyPlayer->setContactTestBitmask(INT_MAX);
 	this->setPhysicsBody(phyPlayer);
 
 	m_vecPower = 0.5f;
 
 	// イベント受け取り処理登録
 	initEventReceive();
-
-	// 画面スクロール対象の設定
-	//this->runAction(VerticalScroll::create(this));
 
 	// スケジューラにUpdate回してもらう
 	this->scheduleUpdate();
@@ -50,7 +52,6 @@ void Player::initEventReceive() {
 }
 
 void Player::update(float _dt) {
-
 
 	// それぞれのレイヤーにイベント発行
 	if (!eventDisptcher(EEventDispatch::DEBUG_DISPLAY_EVENT)) {

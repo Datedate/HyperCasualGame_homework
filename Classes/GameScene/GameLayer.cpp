@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Wall.h"
 #include "VerticalScroll.h"
-
+#include "Rock.h"
 bool GameLayer::init() {
 	if (!Layer::init()) {
 		return false;
@@ -25,9 +25,28 @@ bool GameLayer::init() {
 
 	this->scheduleUpdate();
 
+	
+
+	// ‚¨ŽŽ‚µ
+	auto box = Node::create();
+	box->setPhysicsBody(PhysicsBody::createBox(
+		Size(50,50), PhysicsMaterial(1.0f, 0.3f, 0.5f)));
+
+	// Šâ¶¬‚±‚ñ‚ÈŠ´‚¶
+	auto rock = Rock::create("", Rock::TYPE::TYPE_1, Rect(0, 0, 50, 50));
+	this->addChild(rock);
+	
+	box->getPhysicsBody()->setDynamic(false);
+	box->getPhysicsBody()->setRotationEnable(false);
+	box->setPosition(origin.x + visibleSize.width / 2.0f, origin.y + visibleSize.height);
+	this->addChild(box);
+
+
+
 	return true;
 }
 
 void GameLayer::update(float _dt) {
 	m_wall->updatePos(m_player->getPosition());
 }
+

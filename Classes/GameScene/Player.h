@@ -17,12 +17,15 @@ public:
 	CREATE_FUNC(Player);
 
 	Vec2 getViewPos() const;		// 画面内でのプレイヤー座標取得
+
+
 // TouchLayerからのイベント処理
 	void moveStop(EventCustom* _event);
 	void moveStart(EventCustom* _event);
 private:
 	void initEventReceive();		// イベント受け取り準備
 	bool eventDisptcher(EEventDispatch _eEventType);	// イベント発行処理
+	bool onContactBegin(PhysicsContact& _data);
 private:
 	float m_vecPower;				//	プレイヤー吹き飛ばしベクトルの強さ 
 // プレイヤー座標を渡すイベント

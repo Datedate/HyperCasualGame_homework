@@ -1,4 +1,5 @@
 #include "Wall.h"
+#include "Collision.h"
 
 Wall::Wall()
 {
@@ -32,8 +33,14 @@ bool Wall::init() {
 		m_edges[i] = Node::create();
 		m_edges[i]->setPhysicsBody(PhysicsBody::createEdgeChain(
 			vec[i], 2, PhysicsMaterial(1.0f, 0.3f, 0.5f)));
-		m_edges[i]->getPhysicsBody()->setDynamic(false);
-		m_edges[i]->getPhysicsBody()->setRotationEnable(false);
+		auto phyWall = m_edges[i]->getPhysicsBody();
+		phyWall->setDynamic(false);
+		phyWall->setRotationEnable(false);
+		// Õ“Ë”»’è‚Ìƒ}ƒXƒNÝ’è
+		phyWall->setCategoryBitmask(static_cast<int>(Collision::CRYSTAL));
+		phyWall->setCollisionBitmask(static_cast<int>(Collision::PLAYER));
+		phyWall->setContactTestBitmask(INT_MAX);
+
 		this->addChild(m_edges[i]);
 	}
 

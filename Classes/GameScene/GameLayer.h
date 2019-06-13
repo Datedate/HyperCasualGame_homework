@@ -13,7 +13,7 @@ public:
 	virtual bool init();
 	void update(float _dt);
 	CREATE_FUNC(GameLayer);
-
+	bool onContactBegin(PhysicsContact& _data);
 private:
 
 	Player* m_player;

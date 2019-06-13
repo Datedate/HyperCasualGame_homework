@@ -39,10 +39,6 @@ bool Obstacle::init() {
 		return false;
 	}
 
-	if (generate()) {
-		return false;
-	}
-
 	return true;
 }
 

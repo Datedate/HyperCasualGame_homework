@@ -2,9 +2,18 @@
 #include "Collision.h"
 
 Rock* Rock::create(const std::string& _path) {
-	auto node = Rock::create(_path);
-	node->init();
-	return node;
+	Rock *sprite = new (std::nothrow) Rock();
+	if (sprite && sprite->init())
+	{
+		sprite->autorelease();
+		return sprite;
+	}
+	CC_SAFE_DELETE(sprite);
+	return nullptr;
+
+	//auto node = Rock::create(_path);
+	//node->init();
+	//return node;
 }
 
 Rock* Rock::create(const std::string& _path, const Rect& _rect) {

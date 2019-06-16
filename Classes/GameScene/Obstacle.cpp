@@ -17,10 +17,6 @@ Obstacle* Obstacle::create(const std::string& _path, TYPE _type) {
 	return node;
 }
 */
-Obstacle* Obstacle::create(const std::string& _path, const Rect& _rect) {
-	auto node = Obstacle::create(_path , _rect);
-	return node;
-}
 
 Obstacle* Obstacle::create(const std::string& _path, const Rect& _rect, Vec2 _pos) {
 	auto node = Obstacle::create(_path, _rect);
@@ -42,9 +38,12 @@ bool Obstacle::init() {
 	return true;
 }
 
+bool Obstacle::onCollision(PhysicsContact& _contact) {
+	return true;
+}
 
 bool Obstacle::generate() {
-
+	return true;
 }
 
 void Obstacle::createPhysics(const Vec2* _point, int _count, const PhysicsMaterial& _mat) {
@@ -55,7 +54,7 @@ void Obstacle::createPhysics(const Vec2* _point, int _count, const PhysicsMateri
 }
 
 
-void Obstacle::setPhysicsMask(Collision _myBitMask, Collision _colBitMask, int _contactBitMask) {
+void Obstacle::setPhysicsMask(ECollision _myBitMask, ECollision _colBitMask, int _contactBitMask) {
 	if (m_edge == nullptr) {
 		// èâä˙íl
 		Vec2 p[] = { Vec2(0,0),Vec2(100,100) };
@@ -74,6 +73,6 @@ template < class T>
 void Obstacle::setOnCollision(bool (T::*_func)(PhysicsContact&), int _priority) {
 	
 	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(_func, T);
+	contactListener->onContactBegin = CC_CALLBACK_1(T::_func, T);
 	this->getEventDispatcher()->addEventListenerWithFixedPriority(contactListener, _priority);
 }

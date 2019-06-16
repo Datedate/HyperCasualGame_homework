@@ -30,6 +30,7 @@ private:
 public:
 	static Rock* create(const std::string& _path, Rock::TYPE _type, const Rect& _rect);
 	static Rock* create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, Vec2 _pos);
+	static Rock* create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, float _rota);
 	static Rock* create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, Vec2 _pos, float _rota);
 public:
 	Rock();

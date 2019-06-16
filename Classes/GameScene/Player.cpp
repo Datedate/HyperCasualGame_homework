@@ -3,13 +3,25 @@
 #include "VerticalScroll.h"
 #include "Collision.h"
 
+
+Player* Player::create(const std::string& _filename, const Rect& _rect) {
+	Player *sprite = new (std::nothrow) Player();
+	if (sprite && sprite->initWithFile(_filename, _rect))
+	{
+		sprite->autorelease();
+		return sprite;
+	}
+	CC_SAFE_DELETE(sprite);
+	return nullptr;
+}
+
 Player::~Player() {
 	Director::getInstance()->getEventDispatcher()->removeCustomEventListeners("touchStart_player_event");
 	Director::getInstance()->getEventDispatcher()->removeCustomEventListeners("touchRelease_player_event");
 }
 
-bool Player::init() {
-	if (!Sprite::init()) {
+bool Player::initWithFile(const std::string& _filename, const Rect& _rect) {
+	if (!Sprite::initWithFile(_filename,_rect)) {
 		return false;
 	}
 	// ビュー情報取得
@@ -22,18 +34,29 @@ bool Player::init() {
 	auto playerMat = PHYSICSBODY_MATERIAL_DEFAULT;
 	playerMat.restitution = 0.5f;
 	playerMat.friction = 0.4f;
-	auto phyPlayer = PhysicsBody::createCircle(10.0f, playerMat);
+	auto phyPlayer = PhysicsBody::createCircle(_rect.getMidX(), playerMat);
 	phyPlayer->setDynamic(true);
 	phyPlayer->setRotationEnable(false);
 	phyPlayer->setMass(1.0f);
 	phyPlayer->setMoment(1.0f);
+
 	// 衝突判定のマスク設定
-	phyPlayer->setCategoryBitmask(static_cast<int>(Collision::PLAYER));
-	//phyPlayer->setCollisionBitmask(static_cast<int>(Collision::Wall));
+	phyPlayer->setCategoryBitmask(static_cast<int>(ECollision::PLAYER));
+	//phyPlayer->setCollisionBitmask(static_cast<int>(ECollision::Wall));
 	phyPlayer->setContactTestBitmask(INT_MAX);
 	this->setPhysicsBody(phyPlayer);
 
+	// 衝突タグ設定
+	this->setTag(ECollision::PLAYER);
+
+	// 吹っ飛び力
 	m_vecPower = 0.5f;
+
+	// 死亡フラグ
+	m_isDeadFlg = false;
+
+	// プレイヤーが常に加わるベクトルの強さ
+	m_alwaysVecPower = Vec2(1, 1);
 
 	// イベント受け取り処理登録
 	initEventReceive();
@@ -44,14 +67,18 @@ bool Player::init() {
 	return true;
 }
 
-void Player::initEventReceive() {
-	Director::getInstance()->getEventDispatcher()->addCustomEventListener("touchTrigger_player_event",
-		CC_CALLBACK_1(Player::moveStop, this));
-	Director::getInstance()->getEventDispatcher()->addCustomEventListener("touchRelease_player_event",
-		CC_CALLBACK_1(Player::moveStart, this));
-}
 
 void Player::update(float _dt) {
+	auto posY = getViewPos().y;
+	// プレイヤー座標がLayerより下画面に落ちたらScene遷移
+	if (posY < -20) {
+		// TODO:死亡アニメーションでフラグセット
+		m_isDeadFlg = true;
+	}
+
+	auto vec = this->getPhysicsBody()->getVelocity();
+	this->getPhysicsBody()->setVelocity(Vec2(vec.x ,
+											 vec.y * m_alwaysVecPower.y));
 
 	// それぞれのレイヤーにイベント発行
 	if (!eventDisptcher(EEventDispatch::DEBUG_DISPLAY_EVENT)) {
@@ -63,6 +90,62 @@ void Player::update(float _dt) {
 	if (!eventDisptcher(EEventDispatch::BACKGROUND_EVENT)) {
 		// イベント種類を追加してください
 	}
+}
+
+Vec2 Player::getViewPos() const {
+	// ビュー座標に変換
+	auto layerPos = this->_parent->getPosition();
+	auto playerPos = this->getPosition();
+	return (layerPos + playerPos);
+}
+
+bool Player::isDead() const {
+	return m_isDeadFlg;
+}
+
+void Player::moveStop(EventCustom* _event) {
+	if (!eventDisptcher(EEventDispatch::HOLD_EVENT)) {
+		// イベント種類を追加してください
+	}
+
+	// ベクトル軽減処理
+	m_alwaysVecPower.x *= 0.05f;
+	m_alwaysVecPower.y *= 0.2f;
+	auto vec = this->getPhysicsBody()->getVelocity();
+	this->getPhysicsBody()->setVelocity(Vec2(vec.x * m_alwaysVecPower.x, vec.y));
+	//this->getPhysicsBody()->setDynamic(false);
+
+}
+
+void Player::moveStart(EventCustom* _event) {
+	// ベクトル強さ戻す
+	m_alwaysVecPower = Vec2(1, 1);
+
+	// 吹っ飛ばす処理
+	auto data = (stEventSendTouchData*)_event->getUserData();
+	Point began = data->touchBegan;
+	Point ended = data->touchRealse;
+
+	Vect force = Vect(began.x - ended.x, began.y - ended.y) * m_vecPower;
+	this->getPhysicsBody()->setDynamic(true);
+	this->getPhysicsBody()->applyImpulse(force);
+}
+
+void Player::deadHoldOver(EventCustom* _event) {
+	// TODO:ホールドオーバー時演出
+	m_isDeadFlg = true;
+}
+
+void Player::deadCrystal() {
+	// TODO:クリスタル衝突時演出
+	m_isDeadFlg = true;
+}
+
+void Player::initEventReceive() {
+	Director::getInstance()->getEventDispatcher()->addCustomEventListener("touchTrigger_player_event",
+		CC_CALLBACK_1(Player::moveStop, this));
+	Director::getInstance()->getEventDispatcher()->addCustomEventListener("touchRelease_player_event",
+		CC_CALLBACK_1(Player::moveStart, this));
 }
 
 bool Player::eventDisptcher(EEventDispatch _eEventType) {
@@ -91,31 +174,4 @@ bool Player::eventDisptcher(EEventDispatch _eEventType) {
 		return false;
 	}
 	return true;
-}
-
-Vec2 Player::getViewPos() const {
-	// ビュー座標に変換
-	return Vec2::ZERO;
-}
-
-void Player::moveStop(EventCustom* _event) {
-	if (!eventDisptcher(EEventDispatch::HOLD_EVENT)) {
-		// イベント種類を追加してください
-	}
-
-	// 重力軽減処理
-	this->getPhysicsBody()->setVelocity(Vec2(0, 0));
-	this->getPhysicsBody()->setDynamic(false);
-
-}
-
-void Player::moveStart(EventCustom* _event) {
-	// 吹っ飛ばす処理
-	auto data = (stEventSendTouchData*)_event->getUserData();
-	Point began = data->touchBegan;
-	Point ended = data->touchRealse;
-
-	Vect force = Vect(began.x - ended.x, began.y - ended.y) * m_vecPower;
-	this->getPhysicsBody()->setDynamic(true);
-	this->getPhysicsBody()->applyImpulse(force);
 }

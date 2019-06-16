@@ -5,30 +5,43 @@
 
 USING_NS_CC;
 
-class GameLayer;
 class TouchLayer;
-class TitleLayer;
-class ResultLayer;
 class DebugLayer;
 class UILayer;
 class HoldLayer;
 class BackGroundLayer;
 class EffectLayer;
+class SceneLayer;
 
+enum EScene :long;
 
 class GameScene : public cocos2d::Scene
 {
 public:
-static Scene* createScene();
-	bool init();
-
+//static Scene* createScene();
+static GameScene* createScene();
+	bool initWithPhysics();
+	void update(float _dt);
 
 	// implement the "static create()" method manually
 	CREATE_FUNC(GameScene);
 
 private:
+	void setScene(EScene _currentSceneType);
+	void newScene(EScene _newSceneType);
+	void deleteScene(EScene _oldSceneType);
+private:
 	Scene*     m_physicsScene;
-	GameLayer* m_gamelayer;
+	EScene	   m_sceneType;
+	EScene	   m_oldSceneType;
+
+	SceneLayer*			m_mainLayer;
+	TouchLayer*			m_touchLayer;
+	DebugLayer*			m_debugLayer;
+	UILayer*			m_uiLayer;
+	HoldLayer*			m_holdLayer;
+	BackGroundLayer*	m_backGroundLayer;
+	EffectLayer*		m_effectLayer;
 };
 
 #endif

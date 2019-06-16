@@ -7,6 +7,7 @@ USING_NS_CC;
 
 enum ETouchEventDispatch : long;
 enum EEventDispatch : long;
+enum EScene : long;
 
 class TouchLayer : public Layer {
 public:
@@ -15,6 +16,7 @@ public:
 
 	bool init();
 	//void update(float _dt);
+	void setCurrentScene(EScene _sceneType);
 
 	CREATE_FUNC(TouchLayer);
 // Touchイベント
@@ -35,6 +37,8 @@ private:
 // 保存用タッチ座標
 	Vec2 m_beganPos;
 	Vec2 m_endedPos;
+// Sceneによってイベントを切り替える
+	EScene m_sceneType;
 };
 
 #endif

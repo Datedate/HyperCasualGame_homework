@@ -1,12 +1,13 @@
-#include "Rock.h"
+#include "Crystal.h"
 #include "Collision.h"
+#include "Player.h"
 
 // ================================================================================
-//	岩生成関数
+//	クリスタル生成関数
 // ================================================================================
 
-Rock* Rock::create(const std::string& _path) {
-	Rock* sprite = new (std::nothrow) Rock();
+Crystal* Crystal::create(const std::string& _path) {
+	Crystal* sprite = new (std::nothrow) Crystal();
 	if (sprite && sprite->initWithFile(_path))
 	{
 		sprite->init();
@@ -15,11 +16,15 @@ Rock* Rock::create(const std::string& _path) {
 	}
 	CC_SAFE_DELETE(sprite);
 	return nullptr;
+
+	//auto node = Crystal::create(_path);
+	//node->init();
+	//return node;
 }
 
-Rock* Rock::create(const std::string& _path, const Rect& _rect) {
-	Rock* sprite = new (std::nothrow) Rock();
-	if (sprite && sprite->initWithFile(_path,_rect))
+Crystal* Crystal::create(const std::string& _path, const Rect& _rect) {
+	Crystal* sprite = new (std::nothrow) Crystal();
+	if (sprite && sprite->initWithFile(_path, _rect))
 	{
 		sprite->init();
 		sprite->autorelease();
@@ -29,8 +34,8 @@ Rock* Rock::create(const std::string& _path, const Rect& _rect) {
 	return nullptr;
 }
 
-Rock* Rock::create(const std::string& _path, Rock::TYPE _type) {
-	Rock* sprite = new (std::nothrow) Rock();
+Crystal* Crystal::create(const std::string& _path, Crystal::TYPE _type) {
+	Crystal* sprite = new (std::nothrow) Crystal();
 	if (sprite && sprite->initWithFile(_path))
 	{
 		sprite->m_type = _type;
@@ -42,9 +47,9 @@ Rock* Rock::create(const std::string& _path, Rock::TYPE _type) {
 	return nullptr;
 }
 
-Rock* Rock::create(const std::string& _path, Rock::TYPE _type, const Rect& _rect) {
-	Rock* sprite = new (std::nothrow) Rock();
-	if (sprite && sprite->initWithFile(_path,_rect))
+Crystal* Crystal::create(const std::string& _path, Crystal::TYPE _type, const Rect& _rect) {
+	Crystal* sprite = new (std::nothrow) Crystal();
+	if (sprite && sprite->initWithFile(_path, _rect))
 	{
 		sprite->m_type = _type;
 		sprite->init();
@@ -55,88 +60,82 @@ Rock* Rock::create(const std::string& _path, Rock::TYPE _type, const Rect& _rect
 	return nullptr;
 }
 
-Rock* Rock::create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, Vec2 _pos) {
-	auto node = Rock::create(_path, _type, _rect);
+Crystal* Crystal::create(const std::string& _path, Crystal::TYPE _type, const Rect& _rect, Vec2 _pos) {
+	auto node = Crystal::create(_path, _type, _rect);
 	node->setPosition(_pos);
 	return node;
 }
 
-Rock* Rock::create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, float _rota) {
-	auto node = Rock::create(_path, _type, _rect);
+Crystal* Crystal::create(const std::string& _path, Crystal::TYPE _type, const Rect& _rect, float _rota) {
+	auto node = Crystal::create(_path, _type, _rect);
 	node->setRotation(_rota);
 	return node;
 }
 
-Rock* Rock::create(const std::string& _path, Rock::TYPE _type, const Rect& _rect, Vec2 _pos, float _rota) {
-	auto node = Rock::create(_path, _type,_rect, _pos);
+Crystal* Crystal::create(const std::string& _path, Crystal::TYPE _type, const Rect& _rect, Vec2 _pos, float _rota) {
+	auto node = Crystal::create(_path, _type, _rect, _pos);
 	node->setRotation(_rota);
 	return node;
 }
 
 // ================================================================================
 
-Rock::Rock()
+Crystal::Crystal()
 {
 }
 
-Rock::~Rock()
+Crystal::~Crystal()
 {
 }
 
-bool Rock::init() {
+bool Crystal::init() {
 	// 衝突タグ設定
-	this->setTag(ECollision::ROCK)
-		;
+	this->setTag(ECollision::CRYSTAL);
+
 	generate();
-;	// PhysicsBody生成
+	;	// PhysicsBody生成
 	createPhysics(m_points.data(), m_count, PhysicsMaterial(1.0f, 0.3f, 0.5f));
 	// 衝突ビットマスク設定
-	setPhysicsMask(ECollision::ROCK, ECollision::PLAYER);
+	setPhysicsMask(ECollision::CRYSTAL, ECollision::PLAYER);
 	// 衝突時の関数登録
-	//setOnCollision(Rock::onCollision,10);
+	//setOnCollision(Crystal::onCollision,10);
 	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(Rock::onCollision, this);
+	contactListener->onContactBegin = CC_CALLBACK_1(Crystal::onCollision, this);
 	this->getEventDispatcher()->addEventListenerWithFixedPriority(contactListener, 10);
-	
+
+	return true;
+}
+// TODO:全ての衝突時この関数が呼ばれるので別クラスに分ける
+// 理由；クリスタルのメンバ関数が全ての当たり判定を管理するのはおかしいから
+bool Crystal::onCollision(PhysicsContact& _contact) {
+	auto obstacle = _contact.getShapeB()->getBody()->getNode();
+	if (obstacle->getTag() == ECollision::CRYSTAL) {
+		auto player = static_cast<Player*>(_contact.getShapeA()->getBody()->getNode());
+		player->deadCrystal();
+	}
+	else if (obstacle->getTag() == ECollision::FOAM) {
+
+	}
 	return true;
 }
 
-bool Rock::onCollision(PhysicsContact& _contact) {
-	return true;
-}
-
-bool Rock::generate() {
+bool Crystal::generate() {
 	switch (m_type)
 	{
-	case Rock::TYPE_1:
+	case Crystal::TYPE_1:
 		createEdge_01();
 		break;
-	case Rock::TYPE_2:
+	case Crystal::TYPE_2:
 		createEdge_02();
 		break;
-	case Rock::TYPE_3:
+	case Crystal::TYPE_3:
 		createEdge_03();
 		break;
-	case Rock::TYPE_4:
+	case Crystal::TYPE_4:
 		createEdge_04();
 		break;
-	case Rock::TYPE_5:
+	case Crystal::TYPE_5:
 		createEdge_05();
-		break;
-	case Rock::TYPE_6:
-		createEdge_06();
-		break;
-	case Rock::TYPE_7:
-		createEdge_07();
-		break;
-	case Rock::TYPE_8:
-		createEdge_08();
-		break;
-	case Rock::TYPE_9:
-		createEdge_09();
-		break;
-	case Rock::TYPE_10:
-		createEdge_10();
 		break;
 	default:
 		return false;
@@ -151,7 +150,7 @@ bool Rock::generate() {
 // TODO:脳筋関数群 エッジ自力作成関数
 //
 // =============================================================================
-void Rock::createEdge_01() {
+void Crystal::createEdge_01() {
 	// 画面サイズ取得
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	auto origin = Director::getInstance()->getVisibleOrigin();
@@ -173,7 +172,7 @@ void Rock::createEdge_01() {
 	m_count = count;
 }
 
-void Rock::createEdge_02() {
+void Crystal::createEdge_02() {
 	// エッジの数
 	const int count = 2;
 	// エッジの座標
@@ -189,7 +188,7 @@ void Rock::createEdge_02() {
 	m_count = count;
 }
 
-void Rock::createEdge_03() {
+void Crystal::createEdge_03() {
 	// エッジの数
 	const int count = 2;
 	// エッジの座標
@@ -205,7 +204,7 @@ void Rock::createEdge_03() {
 	m_count = count;
 }
 
-void Rock::createEdge_04() {
+void Crystal::createEdge_04() {
 	// エッジの数
 	const int count = 2;
 	// エッジの座標
@@ -221,87 +220,7 @@ void Rock::createEdge_04() {
 	m_count = count;
 }
 
-void Rock::createEdge_05() {
-	// エッジの数
-	const int count = 2;
-	// エッジの座標
-	Vec2 points[count] = {
-		Vec2(0,0),
-		Vec2(0,0),
-	};
-
-	// メンバ変数に代入
-	for (int i = 0; i < count; ++i) {
-		m_points.push_back(points[i]);
-	}
-	m_count = count;
-}
-
-void Rock::createEdge_06() {
-	// エッジの数
-	const int count = 2;
-	// エッジの座標
-	Vec2 points[count] = {
-		Vec2(0,0),
-		Vec2(0,0),
-	};
-
-	// メンバ変数に代入
-	for (int i = 0; i < count; ++i) {
-		m_points.push_back(points[i]);
-	}
-	m_count = count;
-}
-
-void Rock::createEdge_07() {
-	// エッジの数
-	const int count = 2;
-	// エッジの座標
-	Vec2 points[count] = {
-		Vec2(0,0),
-		Vec2(0,0),
-	};
-
-	// メンバ変数に代入
-	for (int i = 0; i < count; ++i) {
-		m_points.push_back(points[i]);
-	}
-	m_count = count;
-}
-
-void Rock::createEdge_08() {
-	// エッジの数
-	const int count = 2;
-	// エッジの座標
-	Vec2 points[count] = {
-		Vec2(0,0),
-		Vec2(0,0),
-	};
-
-	// メンバ変数に代入
-	for (int i = 0; i < count; ++i) {
-		m_points.push_back(points[i]);
-	}
-	m_count = count;
-}
-
-void Rock::createEdge_09() {
-	// エッジの数
-	const int count = 2;
-	// エッジの座標
-	Vec2 points[count] = {
-		Vec2(0,0),
-		Vec2(0,0),
-	};
-
-	// メンバ変数に代入
-	for (int i = 0; i < count; ++i) {
-		m_points.push_back(points[i]);
-	}
-	m_count = count;
-}
-
-void Rock::createEdge_10() {
+void Crystal::createEdge_05() {
 	// エッジの数
 	const int count = 2;
 	// エッジの座標
@@ -317,4 +236,3 @@ void Rock::createEdge_10() {
 	m_count = count;
 }
 // =============================================================================
-

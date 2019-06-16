@@ -14,7 +14,7 @@ public:
 	~Wall ();
 	bool init();
 	void updatePos(Vec2 _pos);		// プレイヤー座標を取得
-	bool onContactBegin(PhysicsContact& _data);
+//	bool onContactBegin(PhysicsContact& _data);
 
 	CREATE_FUNC(Wall);
 private:

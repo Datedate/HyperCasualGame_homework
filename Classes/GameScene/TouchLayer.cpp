@@ -1,5 +1,6 @@
 #include "TouchLayer.h"
 #include "EventData.h"
+#include "SceneType.h"
 
 TouchLayer::~TouchLayer() {
 	// イベント削除
@@ -16,6 +17,10 @@ bool TouchLayer::init() {
 	initEventReceive();
 
 	return true;
+}
+
+void TouchLayer::setCurrentScene(EScene _sceneType) {
+	m_sceneType = _sceneType;
 }
 
 void TouchLayer::initEventReceive() {
@@ -78,18 +83,39 @@ void TouchLayer::eventOnReleaseDispatch(EEventDispatch _eEventType, Touch* _touc
 }
 
 bool TouchLayer::onTouchBegan(Touch* _touch, Event* _event) {
-	eventOnTriggerDispatch(EEventDispatch::PLAYER_EVENT, _touch);
-	eventOnTriggerDispatch(EEventDispatch::TITLE_EVENT, _touch);
-	eventOnTriggerDispatch(EEventDispatch::HOLD_EVENT, _touch);
-
+	// シーンによってイベント発行を行う
+	switch (m_sceneType) {
+	case EScene::TITLE:
+		eventOnTriggerDispatch(EEventDispatch::TITLE_EVENT, _touch);
+		break;
+	case EScene::GAME:
+		eventOnTriggerDispatch(EEventDispatch::PLAYER_EVENT, _touch);
+		eventOnTriggerDispatch(EEventDispatch::HOLD_EVENT, _touch);
+		break;
+	case EScene::RESULT:
+		break;
+	}
+	
 	m_beganPos = _touch->getLocation();
 	return true;
 }
 
 void TouchLayer::onTouchEnded(Touch* _touch, Event* _event) {
-	eventOnReleaseDispatch(EEventDispatch::PLAYER_EVENT, _touch);
-	eventOnReleaseDispatch(EEventDispatch::TITLE_EVENT, _touch);
-	eventOnReleaseDispatch(EEventDispatch::HOLD_EVENT, _touch);
+	// シーンによってイベント発行を行う
+	switch (m_sceneType)
+	{
+	case TITLE:
+		eventOnReleaseDispatch(EEventDispatch::TITLE_EVENT, _touch);
+		break;
+	case GAME:
+		eventOnReleaseDispatch(EEventDispatch::PLAYER_EVENT, _touch);
+		eventOnReleaseDispatch(EEventDispatch::HOLD_EVENT, _touch);
+		break;
+	case RESULT:
+		break;
+	default:
+		break;
+	}
 
 	m_endedPos = _touch->getLocation();
 }

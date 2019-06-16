@@ -1,7 +1,7 @@
 #ifndef __PROJ_COLLISION_H_
 #define __PROJ_COLLISION_H_
 
-enum Collision {
+enum ECollision : long{
 	PLAYER = 1,
 	WALL =  1 << 1,
 	ROCK = 1 << 2,

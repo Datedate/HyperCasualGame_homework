@@ -37,8 +37,8 @@ bool Wall::init() {
 		phyWall->setDynamic(false);
 		phyWall->setRotationEnable(false);
 		// Õ“Ë”»’è‚Ìƒ}ƒXƒNÝ’è
-		phyWall->setCategoryBitmask(static_cast<int>(Collision::CRYSTAL));
-		phyWall->setCollisionBitmask(static_cast<int>(Collision::PLAYER));
+		phyWall->setCategoryBitmask(static_cast<int>(ECollision::CRYSTAL));
+		phyWall->setCollisionBitmask(static_cast<int>(ECollision::PLAYER));
 		phyWall->setContactTestBitmask(INT_MAX);
 
 		this->addChild(m_edges[i]);

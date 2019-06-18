@@ -52,8 +52,8 @@ bool Player::initWithFile(const std::string& _filename, const Rect& _rect) {
 	// 吹っ飛び力
 	m_vecPower = 0.5f;
 
-	// 死亡フラグ
-	m_isDeadFlg = false;
+	// プレイヤー状態
+	m_state = STATE::ALIVE;
 
 	// プレイヤーが常に加わるベクトルの強さ
 	m_alwaysVecPower = Vec2(1, 1);
@@ -69,16 +69,14 @@ bool Player::initWithFile(const std::string& _filename, const Rect& _rect) {
 
 
 void Player::update(float _dt) {
-	auto posY = getViewPos().y;
-	// プレイヤー座標がLayerより下画面に落ちたらScene遷移
-	if (posY < -20) {
-		// TODO:死亡アニメーションでフラグセット
-		m_isDeadFlg = true;
-	}
+	// プレイヤー座標がLayerより下画面に落ちたら死亡フラグ立てる
+	deadUnder();
+		
+	// ベクトル処理
+	velocityUpdate();
 
-	auto vec = this->getPhysicsBody()->getVelocity();
-	this->getPhysicsBody()->setVelocity(Vec2(vec.x ,
-											 vec.y * m_alwaysVecPower.y));
+	// ブースト処理
+	boostUpdate(_dt);
 
 	// それぞれのレイヤーにイベント発行
 	if (!eventDisptcher(EEventDispatch::DEBUG_DISPLAY_EVENT)) {
@@ -100,7 +98,11 @@ Vec2 Player::getViewPos() const {
 }
 
 bool Player::isDead() const {
-	return m_isDeadFlg;
+	return m_state == STATE::DEAD;
+}
+
+bool Player::isBoost() const {
+	return m_state == STATE::BOOST;
 }
 
 void Player::moveStop(EventCustom* _event) {
@@ -133,12 +135,22 @@ void Player::moveStart(EventCustom* _event) {
 
 void Player::deadHoldOver(EventCustom* _event) {
 	// TODO:ホールドオーバー時演出
-	m_isDeadFlg = true;
+	m_state = STATE::DEAD;
 }
 
 void Player::deadCrystal() {
 	// TODO:クリスタル衝突時演出
-	m_isDeadFlg = true;
+	m_state = STATE::DEAD;
+}
+
+void Player::boostStart(float _distance, float _time) {
+	this->getPhysicsBody()->setDynamic(false);
+
+	// 線形補間データセット
+	Vec2 begin = _position;
+	Vec2 end = Vec2(begin.x,begin.y + _distance);
+	m_lerp.set(begin, end, _time);
+	m_state = STATE::BOOST;
 }
 
 void Player::initEventReceive() {
@@ -175,3 +187,36 @@ bool Player::eventDisptcher(EEventDispatch _eEventType) {
 	}
 	return true;
 }
+
+
+// ===========================================================================
+// update内関数群
+// ===========================================================================
+
+void Player::deadUnder() {
+	auto posY = getViewPos().y;
+	// プレイヤー座標がLayerより下画面に落ちたらScene遷移
+	if (posY < - _rect.getMidY()) {
+		// TODO:死亡アニメーションでフラグセット
+		m_state = STATE::DEAD;
+	}
+}
+
+void Player::velocityUpdate() {
+	auto vec = this->getPhysicsBody()->getVelocity();
+	this->getPhysicsBody()->setVelocity(Vec2(vec.x,
+		vec.y * m_alwaysVecPower.y));
+}
+
+void Player::boostUpdate(float _dt) {
+	if (m_state != STATE::BOOST) return;
+	if (!m_lerp.isAction()) {
+		m_state = STATE::ALIVE;
+		auto physics = this->getPhysicsBody();
+		physics->setDynamic(true);
+		physics->setRotationEnable(false);
+		return;
+	}
+	setPosition( m_lerp.pos(_dt));
+}
+// ===========================================================================

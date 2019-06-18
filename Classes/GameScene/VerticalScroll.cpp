@@ -1,4 +1,5 @@
 #include "VerticalScroll.h"
+#include "Player.h"
 
 VerticalScroll::VerticalScroll() {
 	m_margin = Rect::ZERO;
@@ -54,7 +55,8 @@ void VerticalScroll::step(float dt)
 		//      　　　レイヤーからのプレイヤー座標が画面半分より大きい時	
 		// 処理内容：　画面半分より上に行くときレイヤーを下げる
 		//
-		if(_followedNode->getPhysicsBody()->getVelocity().y > 0 
+		auto physicsNode = _followedNode->getPhysicsBody();
+		if(((physicsNode->getVelocity().y) > 0 || !physicsNode->isDynamic())
 			&& _followedNode->getPositionY() + _target->getPositionY()  > _halfScreenSize.y)
 			y = _halfScreenSize.y - _followedNode->getPositionY();
 

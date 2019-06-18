@@ -26,6 +26,7 @@ private:
 
 	Player* m_player;
 	Wall* m_wall;
+	Sprite* m_item;
 };
 
 #endif
